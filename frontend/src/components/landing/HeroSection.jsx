@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ArrowRight, Code2, Sparkles } from "lucide-react";
 import DashboardPreview from "./DashboardPreview";
@@ -88,6 +89,8 @@ function FloatingDashboard() {
 }
 
 export default function HeroSection() {
+  const navigate = useNavigate();
+
   return (
     <section className="relative overflow-hidden px-6 pt-40 pb-28 lg:px-12">
       <AuroraBackground />
@@ -142,15 +145,15 @@ export default function HeroSection() {
             variants={fadeUp}
             className="mt-10 flex flex-wrap items-center gap-4"
           >
-            <motion.a
-              href="#get-started"
+            <motion.button
+              onClick={() => navigate("/dashboard")}
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
               className="group inline-flex items-center gap-2 rounded-xl bg-[#3B82F6] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(59,130,246,0.4),0_8px_24px_-6px_rgba(59,130,246,0.55)] transition-shadow hover:shadow-[0_0_0_1px_rgba(59,130,246,0.6),0_12px_32px_-4px_rgba(59,130,246,0.7)]"
             >
               Start Reviewing
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </motion.a>
+            </motion.button>
 
             <motion.a
               href="https://github.com"
@@ -178,7 +181,7 @@ export default function HeroSection() {
           </motion.div>
         </div>
 
-        {/* Right column — floating dashboard with pointer-parallax */}
+        {/* Right column */}
         <FloatingDashboard />
       </div>
     </section>

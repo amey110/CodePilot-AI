@@ -7,18 +7,24 @@ import tempfile
 class PylintAnalyzer:
 
     def analyze(self, code: str):
-
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            suffix=".py",
-            delete=False,
-            encoding="utf-8"
-        ) as temp:
-
-            temp.write(code)
-            temp_path = temp.name
+        temp_path = None
 
         try:
+            # Normalize line endings and remove UTF-8 BOM
+            if code:
+                code = code.replace("\r\n", "\n").replace("\r", "\n")
+                code = code.lstrip("\ufeff")
+
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                suffix=".py",
+                delete=False,
+                encoding="utf-8",
+                newline="\n"
+            ) as temp:
+                temp.write(code)
+                temp.flush()
+                temp_path = temp.name
 
             result = subprocess.run(
                 [
@@ -29,48 +35,59 @@ class PylintAnalyzer:
                     "--score=y"
                 ],
                 capture_output=True,
-                text=True
+                text=True,
+                encoding="utf-8",
+                errors="replace"
             )
 
-            output = result.stdout
+            # Read both stdout and stderr
+            output = result.stdout + "\n" + result.stderr
 
-            # Extract score
+            # Extract pylint score
             score = 0.0
 
             match = re.search(
-                r"rated at ([\d\.]+)/10",
+                r"rated at\s+([-\d\.]+)/10",
                 output
             )
 
             if match:
-                score = float(match.group(1))
+                try:
+                    score = float(match.group(1))
+                except ValueError:
+                    score = 0.0
 
-            # Extract issues
+            # Extract pylint issues
             issues = []
 
             for line in output.splitlines():
+                line = line.strip()
 
-                if ":" in line and line.startswith(("C", "W", "E", "R")):
-                    parts = line.split(":", 1)
+                if not line:
+                    continue
 
-                    if len(parts) > 1:
-                        issues.append(parts[1].strip())
+                # Matches:
+                # file.py:1:0: C0114: Missing module docstring
+                if re.search(r":[0-9]+:[0-9]+:", line):
+                    issues.append(line)
 
             return {
-
                 "success": True,
-
                 "score": score,
-
                 "rating": self.get_rating(score),
-
                 "issues": issues
+            }
 
+        except Exception as e:
+            return {
+                "success": False,
+                "score": 0.0,
+                "rating": "Poor",
+                "issues": [str(e)]
             }
 
         finally:
-
-            if os.path.exists(temp_path):
+            if temp_path and os.path.exists(temp_path):
                 os.remove(temp_path)
 
     def get_rating(self, score):
@@ -78,13 +95,13 @@ class PylintAnalyzer:
         if score >= 9:
             return "Excellent"
 
-        if score >= 8:
+        elif score >= 8:
             return "Good"
 
-        if score >= 7:
+        elif score >= 7:
             return "Average"
 
-        if score >= 5:
+        elif score >= 5:
             return "Needs Improvement"
 
         return "Poor"

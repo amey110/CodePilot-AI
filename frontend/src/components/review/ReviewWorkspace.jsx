@@ -1,14 +1,15 @@
-import { useReview } from "../../context/ReviewContext";
-import { ReviewProvider } from "../../context/ReviewContext";
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-hot-toast';
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-hot-toast";
 
-import UploadZone from './UploadZone';
-import FilePreview from './FilePreview';
-import MonacoEditor from '../editor/MonacoEditor';
-import EditorToolbar from '../editor/EditorToolbar';
-import AnalyzePanel from './AnalyzePanel';
+import { reviewService } from "../../services/reviewService";
+import { useReview } from "../../context/ReviewContext";
+
+import UploadZone from "./UploadZone";
+import FilePreview from "./FilePreview";
+import MonacoEditor from "../editor/MonacoEditor";
+import EditorToolbar from "../editor/EditorToolbar";
+import AnalyzePanel from "./AnalyzePanel";
 
 const ReviewWorkspace = () => {
 
@@ -155,7 +156,6 @@ const ReviewWorkspace = () => {
   };
 
   return (
-  <ReviewProvider>
     <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 md:gap-8 h-auto">
       
       {/* LEFT COLUMN: Upload & File management (40% width on xl screens) */}
@@ -248,7 +248,6 @@ const ReviewWorkspace = () => {
       </div>
 
       </div>
-  </ReviewProvider>
 );
 };
 
