@@ -1,9 +1,7 @@
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { User, Mail, Shield, Calendar, Key, UserCheck } from 'lucide-react';
-import Card from '../components/ui/Card';
-import Input from '../components/ui/Input';
-import Button from '../components/ui/Button';
+import { Card, Input, Button } from '../components/ui';
 
 const Profile = () => {
   const { user } = useAuth();

@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 import logging
 
 from app.config.database import settings
@@ -73,7 +74,7 @@ def health_check(db: Session = Depends(get_db)):
     """
     try:
         # Simple query to check database responsiveness
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db_status = "connected"
     except Exception as e:
         logger.error(f"Database health check failed: {e}")

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 import { 
   X, 
   Terminal, 

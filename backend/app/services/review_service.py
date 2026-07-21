@@ -54,5 +54,26 @@ class ReviewService:
             "analysis": analysis_result
         }
 
+    async def analyze_code(self, code: str):
+        """
+        Analyze Python code submitted directly as text.
+        """
+
+        # Validate input
+        if not code or not code.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Code cannot be empty."
+            )
+
+        # Run Analysis Engine
+        analysis_result = analysis_engine.analyze(code)
+
+        return {
+            "success": True,
+            "message": "Code analyzed successfully.",
+            "analysis": analysis_result
+        }
+
 
 review_service = ReviewService()

@@ -3,8 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { User, Mail, Lock, UserPlus } from 'lucide-react';
-import Input from '../components/ui/Input';
-import Button from '../components/ui/Button';
+import { Input, Button } from '../components/ui';
 
 const Register = () => {
   const { register: signup } = useAuth();

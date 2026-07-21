@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import api from '../services/api';
+import { authService } from '../services';
 import toast from 'react-hot-toast';
 
 export const AuthContext = createContext(null);
@@ -13,8 +13,8 @@ export const AuthProvider = ({ children }) => {
   const fetchCurrentUser = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await api.get('/auth/me');
-      setUser(response.data);
+      const data = await authService.getCurrentUser();
+      setUser(data);
     } catch (error) {
       // Token is invalid/expired
       logout(false); // Logout silently on init load failure
@@ -27,17 +27,17 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      const response = await api.post('/auth/login', { email, password });
-      const { access_token } = response.data;
+      const data = await authService.login(email, password);
+      const { access_token } = data;
       
       localStorage.setItem('token', access_token);
       setToken(access_token);
       
       // Fetch user profile after setting token
-      const userResponse = await api.get('/auth/me');
-      setUser(userResponse.data);
+      const userResponse = await authService.getCurrentUser();
+      setUser(userResponse);
       toast.success('Successfully logged in!');
-      return userResponse.data;
+      return userResponse;
     } catch (error) {
       toast.error(error.message || 'Login failed. Please check your credentials.');
       throw error;
@@ -50,12 +50,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (fullName, email, password, confirmPassword) => {
     try {
       setLoading(true);
-      await api.post('/auth/register', {
-        full_name: fullName,
-        email,
-        password,
-        confirm_password: confirmPassword,
-      });
+      await authService.register(fullName, email, password, confirmPassword);
       toast.success('Registration successful! Please login.');
     } catch (error) {
       toast.error(error.message || 'Registration failed.');

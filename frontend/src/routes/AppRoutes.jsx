@@ -1,18 +1,19 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { SkeletonPage } from '../components/ui/SkeletonLoader';
 
 // Layouts
 import DashboardLayout from '../layouts/DashboardLayout';
 import AuthLayout from '../layouts/AuthLayout';
 
-// Pages
-import Landing from '../pages/Landing';
-import Login from '../pages/Login';
-import Register from '../pages/Register';
-import Dashboard from '../pages/Dashboard';
-import Profile from '../pages/Profile';
-import NotFound from '../pages/NotFound';
+// Lazy Loaded Pages for performance and code splitting
+const Landing = lazy(() => import('../pages/Landing'));
+const Login = lazy(() => import('../pages/Login'));
+const Register = lazy(() => import('../pages/Register'));
+const Dashboard = lazy(() => import('../pages/Dashboard'));
+const Profile = lazy(() => import('../pages/Profile'));
+const NotFound = lazy(() => import('../pages/NotFound'));
 
 // Guard
 import { ProtectedRoute } from './ProtectedRoute';
@@ -25,46 +26,48 @@ const PublicRoute = ({ children }) => {
 
 const AppRoutes = () => {
   return (
-    <Routes>
-      {/* Public Pages */}
-      <Route path="/" element={<Landing />} />
-      
-      {/* Auth Pages wrapped in AuthLayout */}
-      <Route element={<AuthLayout />}>
-        <Route 
-          path="/login" 
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          } 
-        />
-        <Route 
-          path="/register" 
-          element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
-          } 
-        />
-      </Route>
-
-      {/* Protected Pages wrapped in DashboardLayout & ProtectedRoute */}
-      <Route element={<ProtectedRoute />}>
-        <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile" element={<Profile />} />
-          
-          {/* Future Modules Placeholders */}
-          <Route path="/reviews" element={<Dashboard mockSection="reviews" />} />
-          <Route path="/history" element={<Dashboard mockSection="history" />} />
-          <Route path="/settings" element={<Dashboard mockSection="settings" />} />
+    <Suspense fallback={<SkeletonPage />}>
+      <Routes>
+        {/* Public Pages */}
+        <Route path="/" element={<Landing />} />
+        
+        {/* Auth Pages wrapped in AuthLayout */}
+        <Route element={<AuthLayout />}>
+          <Route 
+            path="/login" 
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            } 
+          />
+          <Route 
+            path="/register" 
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            } 
+          />
         </Route>
-      </Route>
 
-      {/* 404 Route */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        {/* Protected Pages wrapped in DashboardLayout & ProtectedRoute */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<Profile />} />
+            
+            {/* Future Modules Placeholders */}
+            <Route path="/reviews" element={<Dashboard mockSection="reviews" />} />
+            <Route path="/history" element={<Dashboard mockSection="history" />} />
+            <Route path="/settings" element={<Dashboard mockSection="settings" />} />
+          </Route>
+        </Route>
+
+        {/* 404 Route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 };
 
