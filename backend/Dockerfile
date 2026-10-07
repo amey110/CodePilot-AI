@@ -17,11 +17,12 @@ RUN apt-get update \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend code
+# Copy backend code and prepare startup script
 COPY . .
+RUN chmod +x start.sh && sed -i 's/\r$//' start.sh
 
 # Expose port
 EXPOSE 8000
 
-# Run uvicorn server
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run production startup script (migrations + uvicorn with proxy headers)
+CMD ["./start.sh"]

@@ -11,14 +11,27 @@ logger = logging.getLogger("gemini_service")
 class GeminiService:
     MAX_CODE_CHARS = 25000  # Cap code length to prevent token overflow
     TIMEOUT_SECONDS = 30
-    PREFERRED_MODELS = [
+    DEFAULT_MODELS = [
         "gemini-3.8-flash",
         "gemini-flash-latest",
-        "gemini-1.5-flash",
     ]
 
     def __init__(self):
         self._configured = False
+
+    @property
+    def preferred_models(self) -> list:
+        models = []
+        if getattr(settings, "GEMINI_MODEL", None) and settings.GEMINI_MODEL.strip():
+            models.append(settings.GEMINI_MODEL.strip())
+        if getattr(settings, "GEMINI_FALLBACK_MODEL", None) and settings.GEMINI_FALLBACK_MODEL.strip():
+            fb = settings.GEMINI_FALLBACK_MODEL.strip()
+            if fb not in models:
+                models.append(fb)
+        for m in self.DEFAULT_MODELS:
+            if m not in models:
+                models.append(m)
+        return models
 
     def _configure_client(self) -> bool:
         api_key = settings.GEMINI_API_KEY
@@ -73,7 +86,7 @@ class GeminiService:
 
         last_error_msg = ""
         # Try preferred models in order
-        for model_name in self.PREFERRED_MODELS:
+        for model_name in self.preferred_models:
             try:
                 model = genai.GenerativeModel(
                     model_name,

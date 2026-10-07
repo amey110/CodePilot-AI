@@ -24,9 +24,10 @@ from app.models.user import User
 from app.services.review_service import review_service
 from app.database.repository import review_repository
 from app.schemas.review import CodeReviewRequest
+from app.core.rate_limit import get_client_ip
 
-# Router-local limiter instance (shares same key function as app limiter)
-limiter = Limiter(key_func=get_remote_address)
+# Router-local limiter instance (supports reverse proxy client IPs)
+limiter = Limiter(key_func=get_client_ip)
 
 router = APIRouter(prefix="/review", tags=["Code Review"])
 

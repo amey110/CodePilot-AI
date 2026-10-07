@@ -30,10 +30,12 @@ try:
 except Exception as e:
     logger.error(f"Error initializing database tables: {e}")
 
+from app.core.rate_limit import get_client_ip
+
 # ---------------------------------------------------------------------------
-# Rate limiter (slowapi) — shared instance used in routers
+# Rate limiter (slowapi) — proxy-aware client IP extractor
 # ---------------------------------------------------------------------------
-limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
+limiter = Limiter(key_func=get_client_ip, default_limits=["200/minute"])
 
 # Initialize FastAPI application
 app = FastAPI(
