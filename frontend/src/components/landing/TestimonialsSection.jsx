@@ -33,6 +33,9 @@ export default function TestimonialsSection() {
           transition={{ duration: 0.6 }}
           className="mx-auto mb-16 max-w-xl text-center"
         >
+          <span className="inline-block px-3 py-1 mb-3 text-xs font-semibold uppercase tracking-wider text-violet-400 bg-violet-500/10 border border-violet-500/20 rounded-full">
+            Illustrative Developer Stories & Example Use Cases
+          </span>
           <h2 className="text-3xl font-semibold tracking-tight text-[#F8FAFC] sm:text-4xl">
             Trusted by developers who ship
           </h2>

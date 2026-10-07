@@ -35,6 +35,11 @@ function Counter({ value, suffix }) {
 export default function StatsSection() {
   return (
     <section className="relative border-y border-white/5 px-6 py-20 lg:px-12">
+      <div className="mx-auto max-w-6xl text-center mb-10">
+        <span className="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-violet-400 bg-violet-500/10 border border-violet-500/20 rounded-full">
+          Target Benchmarks & Performance Goals
+        </span>
+      </div>
       <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 lg:grid-cols-4">
         {stats.map((s, i) => (
           <motion.div

@@ -1,48 +1,66 @@
 import React from 'react';
-import { Upload, Sparkles, FileText, Lightbulb, CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Sparkles, FileCode2, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const activities = [
-  { id: 1, type: 'upload', title: 'Uploaded authentication.py', time: '2 mins ago', icon: Upload, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-  { id: 2, type: 'analyze', title: 'Analysis completed', time: '5 mins ago', icon: Sparkles, color: 'text-violet-400', bg: 'bg-violet-400/10' },
-  { id: 3, type: 'report', title: 'Report generated for utils.py', time: '1 hour ago', icon: FileText, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-  { id: 4, type: 'suggestion', title: 'AI suggestions viewed', time: '3 hours ago', icon: Lightbulb, color: 'text-amber-400', bg: 'bg-amber-400/10' },
-  { id: 5, type: 'fix', title: 'Fixed 3 security issues', time: 'Yesterday', icon: CheckCircle2, color: 'text-rose-400', bg: 'bg-rose-400/10' },
-];
+import { useQuery } from '@tanstack/react-query';
+import { reviewService } from '../../services';
 
 const ActivityTimeline = () => {
+  const navigate = useNavigate();
+
+  const { data: reviews = [] } = useQuery({
+    queryKey: ['reviews'],
+    queryFn: () => reviewService.getReviews(1, 5),
+    staleTime: 1000 * 60 * 2,
+  });
+
   return (
     <div className="bg-[#0c101f] border border-white/5 rounded-3xl p-6 shadow-xl h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-white">Activity</h3>
+        <h3 className="text-lg font-bold text-white">Recent Activity</h3>
       </div>
 
       <div className="flex-1 relative">
-        {/* Vertical line connecting timeline items */}
-        <div className="absolute top-4 bottom-4 left-[21px] w-px bg-white/5"></div>
+        {reviews.length > 0 ? (
+          <>
+            {/* Vertical line connecting timeline items */}
+            <div className="absolute top-4 bottom-4 left-[21px] w-px bg-white/5"></div>
 
-        <div className="space-y-6">
-          {activities.map((activity, i) => {
-            const Icon = activity.icon;
-            return (
-              <motion.div 
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-                key={activity.id} 
-                className="flex relative group"
-              >
-                <div className={`relative z-10 flex items-center justify-center w-11 h-11 rounded-full ${activity.bg} ${activity.color} ring-4 ring-[#0c101f] shrink-0 group-hover:scale-110 transition-transform`}>
-                  <Icon className="w-5 h-5" />
-                </div>
-                <div className="ml-4 pt-1 flex-1">
-                  <p className="text-sm font-medium text-gray-200">{activity.title}</p>
-                  <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+            <div className="space-y-6">
+              {reviews.map((review, i) => (
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  key={review.id} 
+                  onClick={() => navigate(`/reviews/${review.id}`)}
+                  className="flex relative group cursor-pointer"
+                >
+                  <div className="relative z-10 flex items-center justify-center w-11 h-11 rounded-full bg-violet-500/10 text-violet-400 ring-4 ring-[#0c101f] shrink-0 group-hover:scale-110 transition-transform">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div className="ml-4 pt-1 flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-200 truncate group-hover:text-violet-300 transition-colors">
+                      Analyzed {review.filename}
+                    </p>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className="text-xs text-gray-400">{review.date}</span>
+                      <span className="text-[10px] text-gray-600">&bull;</span>
+                      <span className="text-xs font-mono font-bold text-emerald-400">
+                        Score {review.score}%
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-500 space-y-2">
+            <Clock className="w-8 h-8 text-gray-600" />
+            <span className="text-xs">No activity yet. Run your first review!</span>
+          </div>
+        )}
       </div>
     </div>
   );

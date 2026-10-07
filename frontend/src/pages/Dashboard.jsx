@@ -1,6 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
-import { stats } from '../constants';
+import { reviewService } from '../services';
+import { formatQuickStats } from '../constants';
 import {
   WelcomeCard,
   QuickStats,
@@ -10,56 +13,47 @@ import {
 } from '../components/dashboard';
 import ReviewWorkspace from '../components/review/ReviewWorkspace';
 
-const Dashboard = ({ mockSection }) => {
+const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const userName = user?.full_name ? user.full_name.split(' ')[0] : 'Developer';
 
-  // Demonstrating the premium state; in a real app this would be state-driven
-  const hasReviews = true; 
+  // Fetch real stats from backend API
+  const { data: statsData } = useQuery({
+    queryKey: ['stats'],
+    queryFn: reviewService.getStats,
+    staleTime: 1000 * 60 * 2,
+  });
 
-  if (mockSection) {
-    // Keeping the original mockSection logic intact as requested for routing functionality
-    const titles = {
-      reviews: 'New Code Review',
-      history: 'Review History Archive',
-      settings: 'System & Account Settings'
-    };
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">{titles[mockSection]}</h1>
-          <p className="text-sm text-gray-400 mt-1">This module is part of Phase 2.</p>
-        </div>
-      </div>
-    );
-  }
+  // Fetch real reviews from backend API
+  const { data: reviews = [] } = useQuery({
+    queryKey: ['reviews'],
+    queryFn: () => reviewService.getReviews(1, 5),
+    staleTime: 1000 * 60 * 2,
+  });
+
+  const formattedStats = formatQuickStats(statsData);
+  const hasReviews = reviews.length > 0;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       <WelcomeCard userName={userName} />
-      <QuickStats stats={stats} />
-      
-      {hasReviews ? (
-        <div className="space-y-8">
-          {/* Professional AI Code Review Workspace */}
-          <ReviewWorkspace />
-          
-          {/* Recent Reviews & Timeline */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8">
-            <div className="xl:col-span-2">
-              <RecentReviews />
-            </div>
-            <div className="flex flex-col space-y-6 md:space-y-8">
-              <ActivityTimeline />
-            </div>
-          </div>
+      <QuickStats stats={formattedStats} />
+
+      {/* Code Review Workspace */}
+      <ReviewWorkspace />
+
+      {/* Recent Reviews & Timeline */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8">
+        <div className="xl:col-span-2">
+          <RecentReviews />
         </div>
-      ) : (
-        <EmptyState />
-      )}
+        <div className="flex flex-col space-y-6 md:space-y-8">
+          <ActivityTimeline />
+        </div>
+      </div>
     </div>
   );
 };
 
 export default Dashboard;
-

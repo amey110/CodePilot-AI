@@ -51,17 +51,7 @@ const ReviewWorkspace = () => {
     if (loadedFile.analysisResults) {
       setAnalysisData(loadedFile.analysisResults);
       setAnalysisCompleted(true);
-      
-      const pylint = loadedFile.analysisResults.analysis?.pylint;
-      if (pylint) {
-        reviewService.saveReviewToHistory(
-          loadedFile.name,
-          pylint.score,
-          loadedFile.size,
-          pylint.rating,
-          pylint.issues ? pylint.issues.length : 0
-        );
-      }
+      window.dispatchEvent(new Event('reviews-updated'));
     } else {
       setAnalysisData(null);
       setAnalysisCompleted(false);

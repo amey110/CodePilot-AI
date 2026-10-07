@@ -1,16 +1,18 @@
 import React, { useEffect } from 'react';
-import { FileCode2, ExternalLink, Loader2, RefreshCw } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { FileCode2, ExternalLink, Loader2, RefreshCw, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { reviewService } from '../../services';
 
 const RecentReviews = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: reviews = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ['reviews'],
-    queryFn: reviewService.getReviews,
-    staleTime: 1000 * 60 * 5, // 5 minutes cache
+    queryFn: () => reviewService.getReviews(1, 5),
+    staleTime: 1000 * 60 * 2, // 2 minutes cache
   });
 
   useEffect(() => {
@@ -24,7 +26,16 @@ const RecentReviews = () => {
   return (
     <div className="bg-[#0c101f] border border-white/5 rounded-3xl p-6 shadow-xl h-full flex flex-col min-h-[300px]">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-white">Recent Reviews</h3>
+        <div className="flex items-center space-x-3">
+          <h3 className="text-lg font-bold text-white">Recent Reviews</h3>
+          <Link 
+            to="/history" 
+            className="text-xs text-violet-400 hover:text-violet-300 font-semibold flex items-center space-x-1"
+          >
+            <span>View All</span>
+            <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
         <button 
           onClick={() => refetch()}
           disabled={isFetching}
@@ -51,7 +62,7 @@ const RecentReviews = () => {
               <th className="pb-3 font-medium px-2">Filename</th>
               <th className="pb-3 font-medium px-2 hidden sm:table-cell">Date</th>
               <th className="pb-3 font-medium px-2">Score</th>
-              <th className="pb-3 font-medium px-2 hidden md:table-cell">Time</th>
+              <th className="pb-3 font-medium px-2 hidden md:table-cell">Rating</th>
               <th className="pb-3 font-medium px-2 text-right">Action</th>
             </tr>
           </thead>
@@ -64,7 +75,8 @@ const RecentReviews = () => {
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: Math.min(i * 0.05, 0.3) }}
                   key={review.id} 
-                  className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group"
+                  onClick={() => navigate(`/reviews/${review.id}`)}
+                  className="border-b border-white/5 hover:bg-white/[0.03] transition-colors group cursor-pointer"
                 >
                   <td className="py-4 px-2">
                     <div className="flex items-center space-x-3">
@@ -81,24 +93,33 @@ const RecentReviews = () => {
                   </td>
                   <td className="py-4 px-2">
                     <div className="flex items-center space-x-2">
-                      <span className={`text-sm font-bold ${
-                        review.score >= 90 ? 'text-emerald-400' : review.score >= 80 ? 'text-violet-400' : 'text-amber-400'
+                      <span className={`text-sm font-bold font-mono ${
+                        review.score >= 90 ? 'text-emerald-400' : review.score >= 70 ? 'text-violet-400' : 'text-amber-400'
                       }`}>
                         {review.score}%
                       </span>
                       <div className="w-12 h-1.5 bg-gray-800 rounded-full overflow-hidden hidden sm:block">
                         <div 
-                          className={`h-full rounded-full ${review.score >= 90 ? 'bg-emerald-400' : review.score >= 80 ? 'bg-violet-400' : 'bg-amber-400'}`}
-                          style={{ width: `${review.score}%` }}
+                          className={`h-full rounded-full ${review.score >= 90 ? 'bg-emerald-400' : review.score >= 70 ? 'bg-violet-400' : 'bg-amber-400'}`}
+                          style={{ width: `${Math.min(100, Math.max(0, review.score))}%` }}
                         ></div>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-2 hidden md:table-cell text-sm text-gray-500">
-                    {review.time}
+                  <td className="py-4 px-2 hidden md:table-cell text-xs font-semibold text-gray-400">
+                    <span className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10">
+                      {review.rating}
+                    </span>
                   </td>
                   <td className="py-4 px-2 text-right">
-                    <button className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/reviews/${review.id}`);
+                      }}
+                      className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                      title="Open Review Details"
+                    >
                       <ExternalLink className="w-4 h-4" />
                     </button>
                   </td>
@@ -107,8 +128,14 @@ const RecentReviews = () => {
             </AnimatePresence>
             {!isLoading && reviews.length === 0 && (
               <tr>
-                <td colSpan={5} className="py-8 text-center text-sm text-gray-500">
-                  No review history available. Run an analysis to start.
+                <td colSpan={5} className="py-12 text-center text-sm text-gray-500">
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    <FileCode2 className="w-8 h-8 text-gray-600" />
+                    <span>No review history available yet.</span>
+                    <Link to="/reviews" className="text-xs text-violet-400 hover:underline font-semibold">
+                      Run your first code review &rarr;
+                    </Link>
+                  </div>
                 </td>
               </tr>
             )}

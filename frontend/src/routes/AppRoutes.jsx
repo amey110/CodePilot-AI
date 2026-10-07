@@ -12,7 +12,11 @@ const Landing = lazy(() => import('../pages/Landing'));
 const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/Register'));
 const Dashboard = lazy(() => import('../pages/Dashboard'));
+const Reviews = lazy(() => import('../pages/Reviews'));
+const History = lazy(() => import('../pages/History'));
+const ReviewDetail = lazy(() => import('../pages/ReviewDetail'));
 const Profile = lazy(() => import('../pages/Profile'));
+const Settings = lazy(() => import('../pages/Settings'));
 const NotFound = lazy(() => import('../pages/NotFound'));
 
 // Guard
@@ -55,12 +59,12 @@ const AppRoutes = () => {
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/reviews" element={<Reviews />} />
+            <Route path="/reviews/:id" element={<ReviewDetail />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/reports" element={<Navigate to="/history" replace />} />
             <Route path="/profile" element={<Profile />} />
-            
-            {/* Future Modules Placeholders */}
-            <Route path="/reviews" element={<Dashboard mockSection="reviews" />} />
-            <Route path="/history" element={<Dashboard mockSection="history" />} />
-            <Route path="/settings" element={<Dashboard mockSection="settings" />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
 
