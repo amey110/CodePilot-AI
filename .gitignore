@@ -6,9 +6,16 @@ __pycache__/
 venv/
 ENV/
 env/
+# Environment variables and secrets
 .env
+*.env
+.env.*
 .env.local
 .env.*.local
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
 .pytest_cache/
 .mypy_cache/
 htmlcov/

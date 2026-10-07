@@ -10,9 +10,12 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://postgres:postgres@db:5432/code_reviewer"
     
     # JWT Auth Settings
-    SECRET_KEY: str = "3dbefc9769da8d15a5bbd6f90ff8efce1b7470fcfd58434cd6d72986cd0575d1"
+    SECRET_KEY: str = "change_me_to_a_secure_random_key_in_production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
+
+    # Google Gemini AI Settings
+    GEMINI_API_KEY: str = ""
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"),
