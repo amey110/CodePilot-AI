@@ -72,10 +72,13 @@ const AnalyzePanel = ({
       setAnalysisData(response);
       setAnalysisCompleted(true);
 
-      const pylint = response.analysis?.pylint || response.analysis || {};
-      const score = pylint.score !== undefined ? pylint.score : 0;
-      const rating = pylint.rating || 'Completed';
-      const issues = pylint.issues || [];
+      const analysisObj = response.analysis || {};
+      const pylint = analysisObj.pylint || {};
+      const score = analysisObj.overall_score !== undefined
+        ? analysisObj.overall_score
+        : (pylint.score !== undefined ? pylint.score : 0);
+      const rating = analysisObj.overall_rating || pylint.rating || 'Completed';
+      const issues = analysisObj.issues || pylint.issues || [];
       const codeSize = new Blob([code]).size;
       const fileName = file ? file.name : 'pasted_code.py';
 
@@ -138,11 +141,18 @@ const AnalyzePanel = ({
   const displaySize = formatBytes(getCodeSize());
   const isDisabled = !code || !code.trim() || isAnalyzing;
 
-  // Extract Pylint analysis data from response
-  const pylintData = analysisData?.analysis?.pylint || {};
-  const pylintScore = pylintData.score !== undefined ? pylintData.score : null;
-  const pylintRating = pylintData.rating || 'N/A';
-  const pylintIssues = pylintData.issues || [];
+  // Extract multi-analyzer metrics from response
+  const analysisObj = analysisData?.analysis || {};
+  const pylintData = analysisObj.pylint || {};
+  const banditData = analysisObj.bandit || {};
+  const flake8Data = analysisObj.flake8 || {};
+  const radonData = analysisObj.radon || {};
+
+  const overallScore = analysisObj.overall_score !== undefined
+    ? analysisObj.overall_score
+    : (pylintData.score !== undefined ? pylintData.score : null);
+  const overallRating = analysisObj.overall_rating || pylintData.rating || 'N/A';
+  const allIssues = analysisObj.issues || pylintData.issues || [];
 
   const getRatingBadgeClass = (rating) => {
     switch (rating) {
@@ -268,22 +278,44 @@ const AnalyzePanel = ({
               </div>
 
               {/* Top Score Banner */}
-              {pylintScore !== null && (
-                <div className="mb-5 bg-[#070a13]/80 border border-white/5 rounded-2xl p-4 flex items-center justify-between">
+              {overallScore !== null && (
+                <div className="mb-5 bg-[#070a13]/80 border border-white/5 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center space-x-3.5">
                     <div className="p-3 bg-violet-500/10 border border-violet-500/20 rounded-xl text-violet-400">
                       <Award className="w-6 h-6" />
                     </div>
                     <div>
-                      <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block">Pylint Quality Score</span>
+                      <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block">Overall Code Quality Score</span>
                       <div className="flex items-baseline space-x-1 mt-0.5">
-                        <span className="text-2xl font-black text-white font-mono">{pylintScore}</span>
-                        <span className="text-xs text-gray-500 font-mono">/ 10</span>
+                        <span className="text-2xl font-black text-white font-mono">{overallScore}</span>
+                        <span className="text-xs text-gray-500 font-mono">/ 100</span>
                       </div>
                     </div>
                   </div>
-                  <div className={`text-xs font-bold px-3 py-1.5 rounded-xl border font-mono ${getRatingBadgeClass(pylintRating)}`}>
-                    {pylintRating}
+                  <div className={`text-xs font-bold px-3 py-1.5 rounded-xl border font-mono self-start sm:self-auto ${getRatingBadgeClass(overallRating)}`}>
+                    {overallRating}
+                  </div>
+                </div>
+              )}
+
+              {/* Analyzer Scores Breakdown (Pylint, Bandit, Flake8, Radon) */}
+              {(pylintData.score !== undefined || banditData.score !== undefined) && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
+                  <div className="bg-[#070a13]/60 border border-white/5 rounded-xl p-2.5 text-center">
+                    <span className="text-[10px] text-gray-500 uppercase tracking-wider block font-semibold">Pylint</span>
+                    <span className="text-sm font-bold text-white font-mono">{pylintData.score !== undefined ? pylintData.score : 'N/A'}<span className="text-[10px] text-gray-500">/10</span></span>
+                  </div>
+                  <div className="bg-[#070a13]/60 border border-white/5 rounded-xl p-2.5 text-center">
+                    <span className="text-[10px] text-gray-500 uppercase tracking-wider block font-semibold">Security (Bandit)</span>
+                    <span className="text-sm font-bold text-emerald-400 font-mono">{banditData.score !== undefined ? banditData.score : 'N/A'}<span className="text-[10px] text-gray-500">/100</span></span>
+                  </div>
+                  <div className="bg-[#070a13]/60 border border-white/5 rounded-xl p-2.5 text-center">
+                    <span className="text-[10px] text-gray-500 uppercase tracking-wider block font-semibold">Style (Flake8)</span>
+                    <span className="text-sm font-bold text-violet-400 font-mono">{flake8Data.score !== undefined ? flake8Data.score : 'N/A'}<span className="text-[10px] text-gray-500">/100</span></span>
+                  </div>
+                  <div className="bg-[#070a13]/60 border border-white/5 rounded-xl p-2.5 text-center">
+                    <span className="text-[10px] text-gray-500 uppercase tracking-wider block font-semibold">Radon (MI)</span>
+                    <span className="text-sm font-bold text-cyan-400 font-mono">{radonData.maintainability_index !== undefined ? radonData.maintainability_index : (radonData.score ?? 'N/A')}<span className="text-[10px] text-gray-500">/100</span></span>
                   </div>
                 </div>
               )}
@@ -355,31 +387,72 @@ const AnalyzePanel = ({
                 </div>
               </div>
 
-              {/* Pylint Diagnostics & Issues Section */}
+              {/* Diagnostics & Issues Section */}
               <div className="mt-6 border-t border-white/5 pt-5">
                 <div className="flex items-center space-x-2 mb-3">
                   <ListChecks className="w-4 h-4 text-violet-400" />
                   <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-                    Pylint Diagnostics & Code Issues ({pylintIssues.length})
+                    Diagnostics & Code Issues ({allIssues.length})
                   </h4>
                 </div>
 
-                {pylintIssues.length > 0 ? (
-                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                    {pylintIssues.map((issue, idx) => (
-                      <div 
-                        key={idx} 
-                        className="bg-[#070a13]/80 border border-amber-500/20 rounded-xl p-3 flex items-start space-x-3 text-xs"
-                      >
-                        <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                        <span className="text-gray-300 font-mono leading-relaxed">{issue}</span>
-                      </div>
-                    ))}
+                {allIssues.length > 0 ? (
+                  <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                    {allIssues.map((issue, idx) => {
+                      const isObj = typeof issue === 'object' && issue !== null;
+                      const lineNum = isObj ? issue.line : null;
+                      const codeTag = isObj ? issue.code : null;
+                      const severity = isObj ? (issue.severity || 'warning') : 'warning';
+                      const msg = isObj ? (issue.message || '') : String(issue);
+                      const source = isObj ? issue.source : null;
+
+                      const sevLower = String(severity).toLowerCase();
+                      const isError = ['error', 'fatal', 'high'].includes(sevLower);
+                      const isWarning = ['warning', 'medium', 'refactor'].includes(sevLower);
+
+                      return (
+                        <div 
+                          key={idx} 
+                          className={`bg-[#070a13]/80 border rounded-xl p-3 flex items-start space-x-3 text-xs transition-colors ${
+                            isError ? 'border-rose-500/30' : isWarning ? 'border-amber-500/20' : 'border-violet-500/20'
+                          }`}
+                        >
+                          <AlertTriangle className={`w-4 h-4 shrink-0 mt-0.5 ${
+                            isError ? 'text-rose-400' : isWarning ? 'text-amber-400' : 'text-violet-400'
+                          }`} />
+                          <div className="flex-1 space-y-1">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {source && (
+                                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-gray-400 uppercase">
+                                  {source}
+                                </span>
+                              )}
+                              {lineNum && (
+                                <span className="text-[10px] font-mono font-semibold text-violet-400">
+                                  Line {lineNum}
+                                </span>
+                              )}
+                              {codeTag && (
+                                <span className="text-[10px] font-mono font-bold text-amber-300">
+                                  [{codeTag}]
+                                </span>
+                              )}
+                              <span className={`text-[10px] font-mono uppercase px-1.5 py-0.5 rounded ${
+                                isError ? 'bg-rose-500/10 text-rose-400' : isWarning ? 'bg-amber-500/10 text-amber-400' : 'bg-violet-500/10 text-violet-400'
+                              }`}>
+                                {severity}
+                              </span>
+                            </div>
+                            <span className="text-gray-300 font-mono leading-relaxed block">{msg}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="bg-[#070a13]/80 border border-emerald-500/20 rounded-xl p-4 flex items-center space-x-3 text-xs text-emerald-400">
                     <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>No static analysis issues detected! Code adheres to PEP 8 standards.</span>
+                    <span>No static analysis issues detected! Code adheres to PEP 8 & security standards.</span>
                   </div>
                 )}
               </div>

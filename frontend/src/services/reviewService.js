@@ -61,15 +61,18 @@ export const reviewService = {
       }
     }
     
-    // Scale pylint score (out of 10) to percentage (0-100)
-    let scorePct = Math.min(100, Math.max(0, Math.round((pylintScore || 0) * 10)));
+    // Support both 0-10 (pylint scale) and 0-100 (composite score)
+    const rawVal = pylintScore || 0;
+    const scorePct = rawVal > 10 
+      ? Math.min(100, Math.max(0, Math.round(rawVal)))
+      : Math.min(100, Math.max(0, Math.round(rawVal * 10)));
     
     const newReview = {
       id: Date.now(),
       filename: filename || 'pasted_code.py',
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       score: scorePct,
-      pylintRawScore: pylintScore,
+      rawScore: rawVal,
       rating: rating,
       status: 'Completed',
       issuesCount: issuesCount,
