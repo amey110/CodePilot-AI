@@ -1,5 +1,6 @@
 import uuid
 from sqlalchemy import Column, String, Boolean, DateTime, Integer
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database.session import Base
 
@@ -23,3 +24,6 @@ class User(Base):
         onupdate=func.now(), 
         nullable=False
     )
+
+    # ORM relationship to reviews
+    reviews = relationship("Review", back_populates="owner", cascade="all, delete-orphan")
