@@ -16,6 +16,15 @@ class AnalyzerResult(BaseModel):
     issues: List[CodeIssue] = Field(default_factory=list)
 
 
+class AIReviewData(BaseModel):
+    summary: str
+    bugs: List[str] = Field(default_factory=list)
+    security_risks: List[str] = Field(default_factory=list)
+    performance_tips: List[str] = Field(default_factory=list)
+    readability_tips: List[str] = Field(default_factory=list)
+    improved_code: str = ""
+
+
 class CodeReviewRequest(BaseModel):
     code: str
 
@@ -25,3 +34,5 @@ class CodeReviewResponse(BaseModel):
     score: float
     rating: str
     issues: List[CodeIssue]
+    ai_review: Optional[AIReviewData] = None
+    ai_message: Optional[str] = None

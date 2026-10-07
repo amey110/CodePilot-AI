@@ -1,5 +1,6 @@
 from fastapi import UploadFile, HTTPException
 from app.engine.analysis_engine import analysis_engine
+from app.ai.gemini_service import gemini_service
 
 
 class ReviewService:
@@ -41,8 +42,16 @@ class ReviewService:
                 detail="Unable to read file. Please upload a valid UTF-8 Python file."
             )
 
-        # Run Complete Analysis Engine
+        # 1. Run Complete Static Analysis Engine
         analysis_result = analysis_engine.analyze(code)
+
+        # 2. Run Gemini AI Review (gracefully fails without breaking static analysis)
+        ai_res = gemini_service.review_code(code, analysis_result)
+        ai_review = ai_res.get("ai_review")
+        ai_message = ai_res.get("message")
+
+        analysis_result["ai_review"] = ai_review
+        analysis_result["ai_message"] = ai_message
 
         return {
             "success": True,
@@ -51,7 +60,9 @@ class ReviewService:
             "language": "Python",
             "size_bytes": len(content),
             "total_lines": len(code.splitlines()),
-            "analysis": analysis_result
+            "analysis": analysis_result,
+            "ai_review": ai_review,
+            "ai_message": ai_message
         }
 
     async def analyze_code(self, code: str):
@@ -66,13 +77,23 @@ class ReviewService:
                 detail="Code cannot be empty."
             )
 
-        # Run Analysis Engine
+        # 1. Run Complete Static Analysis Engine
         analysis_result = analysis_engine.analyze(code)
+
+        # 2. Run Gemini AI Review
+        ai_res = gemini_service.review_code(code, analysis_result)
+        ai_review = ai_res.get("ai_review")
+        ai_message = ai_res.get("message")
+
+        analysis_result["ai_review"] = ai_review
+        analysis_result["ai_message"] = ai_message
 
         return {
             "success": True,
             "message": "Code analyzed successfully.",
-            "analysis": analysis_result
+            "analysis": analysis_result,
+            "ai_review": ai_review,
+            "ai_message": ai_message
         }
 
 
