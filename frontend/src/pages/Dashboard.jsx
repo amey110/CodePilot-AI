@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { reviewService } from '../services';
@@ -9,13 +8,11 @@ import {
   QuickStats,
   RecentReviews,
   ActivityTimeline,
-  EmptyState
 } from '../components/dashboard';
 import ReviewWorkspace from '../components/review/ReviewWorkspace';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const userName = user?.full_name ? user.full_name.split(' ')[0] : 'Developer';
 
   // Fetch real stats from backend API
@@ -25,15 +22,14 @@ const Dashboard = () => {
     staleTime: 1000 * 60 * 2,
   });
 
-  // Fetch real reviews from backend API
-  const { data: reviews = [] } = useQuery({
+  // Fetch real reviews from backend API (primes query cache for RecentReviews + ActivityTimeline)
+  useQuery({
     queryKey: ['reviews'],
     queryFn: () => reviewService.getReviews(1, 5),
     staleTime: 1000 * 60 * 2,
   });
 
   const formattedStats = formatQuickStats(statsData);
-  const hasReviews = reviews.length > 0;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">

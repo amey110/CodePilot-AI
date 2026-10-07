@@ -9,19 +9,29 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
+  // Logout handler
+  const logout = useCallback((showToast = true) => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setUser(null);
+    if (showToast) {
+      toast.success('Logged out successfully.');
+    }
+  }, []);
+
   // Fetch current user details
   const fetchCurrentUser = useCallback(async () => {
     try {
       setLoading(true);
       const data = await authService.getCurrentUser();
       setUser(data);
-    } catch (error) {
+    } catch {
       // Token is invalid/expired
       logout(false); // Logout silently on init load failure
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [logout]);
 
   // Login handler
   const login = async (email, password) => {
@@ -60,15 +70,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout handler
-  const logout = useCallback((showToast = true) => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
-    if (showToast) {
-      toast.success('Logged out successfully.');
-    }
-  }, []);
 
   // Check user status on mount
   useEffect(() => {

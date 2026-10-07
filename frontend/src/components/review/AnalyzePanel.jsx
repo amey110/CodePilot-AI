@@ -25,9 +25,17 @@ import { toast } from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { reviewService } from '../../services';
 
+const ANALYSIS_STEPS = [
+  'Parsing abstract syntax tree (AST)...',
+  'Running Pylint & Flake8 style analyzers...',
+  'Performing Bandit security vulnerability audit...',
+  'Computing Radon cyclomatic complexity...',
+  'Querying Gemini AI for review & code improvements...'
+];
+
 const AnalyzePanel = ({
   code,
-  file,
+  _file,
   isAnalyzing,
   setIsAnalyzing,
   analysisCompleted,
@@ -40,21 +48,13 @@ const AnalyzePanel = ({
   const [copied, setCopied] = useState(false);
   const queryClient = useQueryClient();
 
-  const steps = [
-    'Parsing abstract syntax tree (AST)...',
-    'Running Pylint & Flake8 style analyzers...',
-    'Performing Bandit security vulnerability audit...',
-    'Computing Radon cyclomatic complexity...',
-    'Querying Gemini AI for review & code improvements...'
-  ];
-
   useEffect(() => {
     let interval;
     if (isAnalyzing) {
       setLoadingStep(0);
       interval = setInterval(() => {
         setLoadingStep((prev) => {
-          if (prev >= steps.length - 1) {
+          if (prev >= ANALYSIS_STEPS.length - 1) {
             clearInterval(interval);
             return prev;
           }
@@ -106,22 +106,6 @@ const AnalyzePanel = ({
   const linesOfCode = code ? code.split('\n').length : 0;
   const logicalLines = code ? code.split('\n').filter(l => l.trim() && !l.trim().startsWith('#')).length : 0;
   
-  const formatBytes = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const getCodeSize = () => {
-    if (file) return file.size;
-    if (!code) return 0;
-    return new Blob([code]).size;
-  };
-
-  const displayName = file ? file.name : 'pasted_code.py';
-  const displaySize = formatBytes(getCodeSize());
   const isDisabled = !code || !code.trim() || isAnalyzing;
 
   // Analysis object unpacking
@@ -226,7 +210,7 @@ const AnalyzePanel = ({
             <div className="flex items-center space-x-3 text-violet-400">
               <Loader2 className="w-5 h-5 animate-spin" />
               <span className="text-sm font-semibold tracking-wide font-mono">
-                {steps[loadingStep]}
+                {ANALYSIS_STEPS[loadingStep]}
               </span>
             </div>
             

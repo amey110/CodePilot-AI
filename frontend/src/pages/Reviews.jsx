@@ -1,5 +1,5 @@
 import React from 'react';
-import { Code2, Sparkles } from 'lucide-react';
+import { Code2 } from 'lucide-react';
 import ReviewWorkspace from '../components/review/ReviewWorkspace';
 
 const Reviews = () => {

@@ -133,3 +133,28 @@ def test_api_review_analyze_endpoint():
     assert "analysis" in data
     assert "overall_score" in data["analysis"]
     assert "overall_rating" in data["analysis"]
+
+
+def test_parser_syntax_error():
+    result = code_parser.parse("def broken_syntax(:")
+    assert result["success"] is False
+    assert len(result["issues"]) >= 1
+    assert result["issues"][0]["code"] == "SYNTAX_ERROR"
+
+
+def test_analyzers_empty_code():
+    pylint_res = pylint_analyzer.analyze("")
+    assert pylint_res["success"] is True
+
+    bandit_res = bandit_analyzer.analyze("")
+    assert bandit_res["success"] is True
+
+    flake8_res = flake8_analyzer.analyze("")
+    assert flake8_res["success"] is True
+
+    radon_res = radon_analyzer.analyze("")
+    assert radon_res["success"] is True
+
+    parser_res = code_parser.parse("")
+    assert parser_res["success"] is True
+

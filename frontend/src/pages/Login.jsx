@@ -27,7 +27,7 @@ const Login = () => {
       setSubmitting(true);
       await login(data.email, data.password);
       navigate('/dashboard');
-    } catch (err) {
+    } catch {
       // Errors are handled and toasted inside AuthContext
     } finally {
       setSubmitting(false);

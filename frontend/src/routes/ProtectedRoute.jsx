@@ -4,10 +4,6 @@ import { useAuth } from "../hooks/useAuth";
 import { Loader2 } from "lucide-react";
 
 export const ProtectedRoute = () => {
-  // Temporary: Bypass authentication during development
-  return <Outlet />;
-
-  /*
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
@@ -22,5 +18,4 @@ export const ProtectedRoute = () => {
   }
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
-  */
 };

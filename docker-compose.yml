@@ -22,8 +22,14 @@ services:
     build: ./backend
     container_name: code_reviewer_backend
     restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/code_reviewer
+      - CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,https://code-pilot-ai-beta.vercel.app
+      - SECRET_KEY=${SECRET_KEY:-insecure_dev_secret_key_change_in_production_32chars}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     env_file:
-      - ./backend/.env
+      - path: ./backend/.env
+        required: false
     ports:
       - "8000:8000"
     volumes:

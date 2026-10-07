@@ -6,7 +6,6 @@ import {
   Download, 
   Trash2, 
   Loader2, 
-  FileCode2, 
   Calendar, 
   Award, 
   AlertTriangle,
@@ -115,6 +114,11 @@ const ReviewDetail = () => {
                 <span>
                   {review.created_at ? new Date(review.created_at).toLocaleString() : 'Recent'}
                 </span>
+              </span>
+              <span className="text-xs text-gray-600">&bull;</span>
+              <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-500/10 border border-violet-500/20 text-violet-300">
+                <Award className="w-3 h-3 text-violet-400" />
+                <span>{score}/100 ({rating})</span>
               </span>
             </div>
             <h1 className="text-2xl font-black text-white tracking-tight truncate max-w-md sm:max-w-xl">

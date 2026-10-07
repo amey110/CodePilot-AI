@@ -7,8 +7,7 @@ import {
   Maximize2, 
   Minimize2, 
   Lock, 
-  Unlock,
-  ChevronDown
+  Unlock
 } from 'lucide-react';
 import LanguageSelector from './LanguageSelector';
 

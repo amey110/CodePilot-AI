@@ -16,6 +16,9 @@ backend/.env
 backend/.env.*
 frontend/.env
 frontend/.env.*
+!.env.example
+!backend/.env.example
+!frontend/.env.example
 .pytest_cache/
 .mypy_cache/
 htmlcov/

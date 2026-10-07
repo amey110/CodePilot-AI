@@ -31,7 +31,7 @@ const Register = () => {
       setSubmitting(true);
       await signup(data.fullName, data.email, data.password, data.confirmPassword);
       navigate('/login');
-    } catch (err) {
+    } catch {
       // Errors are handled and toasted inside AuthContext
     } finally {
       setSubmitting(false);

@@ -4,11 +4,8 @@ import {
   Settings as SettingsIcon, 
   User, 
   Sliders, 
-  Sparkles, 
   ShieldCheck, 
   Server, 
-  Check, 
-  Moon, 
   Cpu
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';

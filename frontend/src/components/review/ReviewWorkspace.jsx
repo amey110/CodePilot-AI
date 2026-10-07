@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 
-import { reviewService } from "../../services/reviewService";
 import { useReview } from "../../context/ReviewContext";
 
 import UploadZone from "./UploadZone";
@@ -86,7 +85,7 @@ const ReviewWorkspace = () => {
       await navigator.clipboard.writeText(code);
       toast.success('Code copied to clipboard');
       return true;
-    } catch (err) {
+    } catch {
       toast.error('Failed to copy code. Please select and copy manually.');
       return false;
     }
@@ -108,7 +107,7 @@ const ReviewWorkspace = () => {
       } else {
         toast.error('Clipboard is empty or contains non-text elements');
       }
-    } catch (err) {
+    } catch {
       toast.error('Browser blocked clipboard access. Press Ctrl+V (or Cmd+V) directly inside the editor.');
     }
   };
