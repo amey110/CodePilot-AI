@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     # Google Gemini AI Settings
     GEMINI_API_KEY: str = ""
-     GEMINI_MODEL: str = "gemini-flash-latest"
+    GEMINI_MODEL: str = "gemini-flash-latest"
     GEMINI_FALLBACK_MODEL: str = "gemini-2.5-flash"
 
     # CORS — comma-separated list of allowed frontend origins
