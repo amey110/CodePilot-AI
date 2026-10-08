@@ -35,7 +35,7 @@ const ANALYSIS_STEPS = [
 
 const AnalyzePanel = ({
   code,
-  _file,
+  file,
   isAnalyzing,
   setIsAnalyzing,
   analysisCompleted,
@@ -107,6 +107,11 @@ const AnalyzePanel = ({
   const logicalLines = code ? code.split('\n').filter(l => l.trim() && !l.trim().startsWith('#')).length : 0;
   
   const isDisabled = !code || !code.trim() || isAnalyzing;
+
+  const displayName =
+    (typeof file === 'string' ? file : file?.name) ||
+    analysisData?.filename ||
+    'pasted_code.py';
 
   // Analysis object unpacking
   const analysisObj = analysisData?.analysis || {};
