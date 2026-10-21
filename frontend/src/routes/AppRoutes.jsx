@@ -24,7 +24,10 @@ import { ProtectedRoute } from './ProtectedRoute';
 
 // Public Route Guard (Redirect authenticated users away from login/register to dashboard)
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  if (loading && localStorage.getItem('token')) {
+    return null;
+  }
   return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
 };
 

@@ -59,26 +59,23 @@ export const AuthProvider = ({ children }) => {
   // Register handler
   const register = async (fullName, email, password, confirmPassword) => {
     try {
-      setLoading(true);
       await authService.register(fullName, email, password, confirmPassword);
       toast.success('Registration successful! Please login.');
     } catch (error) {
       toast.error(error.message || 'Registration failed.');
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
 
   // Check user status on mount
   useEffect(() => {
-    if (token) {
+    if (token && !user) {
       fetchCurrentUser();
-    } else {
+    } else if (!token) {
       setLoading(false);
     }
-  }, [token, fetchCurrentUser]);
+  }, [token, user, fetchCurrentUser]);
 
   // Handle global JWT expiration events from Axios interceptor
   useEffect(() => {
