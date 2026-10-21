@@ -38,6 +38,7 @@ class Flake8Analyzer:
                     temp_path
                 ],
                 capture_output=True,
+                stdin=subprocess.DEVNULL,
                 text=True,
                 encoding="utf-8",
                 errors="replace",

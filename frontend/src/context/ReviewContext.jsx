@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 const ReviewContext = createContext();
 
@@ -8,6 +8,24 @@ export const ReviewProvider = ({ children }) => {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const resetReview = useCallback(() => {
+    setFile(null);
+    setCode("");
+    setAnalysis(null);
+    setLoading(false);
+    setError(null);
+  }, []);
+
+  useEffect(() => {
+    const handleReset = () => resetReview();
+    window.addEventListener('auth-logout', handleReset);
+    window.addEventListener('auth-expired', handleReset);
+    return () => {
+      window.removeEventListener('auth-logout', handleReset);
+      window.removeEventListener('auth-expired', handleReset);
+    };
+  }, [resetReview]);
 
   const value = {
     file,
@@ -24,6 +42,8 @@ export const ReviewProvider = ({ children }) => {
 
     error,
     setError,
+
+    resetReview,
   };
 
   return (

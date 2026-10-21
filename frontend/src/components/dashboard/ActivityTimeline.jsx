@@ -4,13 +4,16 @@ import { Sparkles, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { reviewService } from '../../services';
+import { useAuth } from '../../hooks/useAuth';
 
 const ActivityTimeline = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const { data: reviews = [] } = useQuery({
-    queryKey: ['reviews'],
+    queryKey: ['reviews', user?.id],
     queryFn: () => reviewService.getReviews(1, 5),
+    enabled: !!user?.id,
     staleTime: 1000 * 60 * 2,
   });
 

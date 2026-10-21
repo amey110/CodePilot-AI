@@ -4,14 +4,17 @@ import { FileCode2, ExternalLink, Loader2, RefreshCw, ArrowRight } from 'lucide-
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { reviewService } from '../../services';
+import { useAuth } from '../../hooks/useAuth';
 
 const RecentReviews = () => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const { data: reviews = [], isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['reviews'],
+    queryKey: ['reviews', user?.id],
     queryFn: () => reviewService.getReviews(1, 5),
+    enabled: !!user?.id,
     staleTime: 1000 * 60 * 2, // 2 minutes cache
   });
 

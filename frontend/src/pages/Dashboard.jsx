@@ -15,17 +15,19 @@ const Dashboard = () => {
   const { user } = useAuth();
   const userName = user?.full_name ? user.full_name.split(' ')[0] : 'Developer';
 
-  // Fetch real stats from backend API
+  // Fetch real stats from backend API (scoped strictly to current user)
   const { data: statsData } = useQuery({
-    queryKey: ['stats'],
+    queryKey: ['stats', user?.id],
     queryFn: reviewService.getStats,
+    enabled: !!user?.id,
     staleTime: 1000 * 60 * 2,
   });
 
   // Fetch real reviews from backend API (primes query cache for RecentReviews + ActivityTimeline)
   useQuery({
-    queryKey: ['reviews'],
+    queryKey: ['reviews', user?.id],
     queryFn: () => reviewService.getReviews(1, 5),
+    enabled: !!user?.id,
     staleTime: 1000 * 60 * 2,
   });
 

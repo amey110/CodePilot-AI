@@ -40,6 +40,7 @@ class PylintAnalyzer:
                     "--msg-template={line}:{column}:{msg_id}:{category}:{msg}"
                 ],
                 capture_output=True,
+                stdin=subprocess.DEVNULL,
                 text=True,
                 encoding="utf-8",
                 errors="replace",

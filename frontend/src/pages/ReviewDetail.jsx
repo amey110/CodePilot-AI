@@ -15,16 +15,19 @@ import { toast } from 'react-hot-toast';
 import { reviewService, reportService } from '../services';
 import MonacoEditor from '../components/editor/MonacoEditor';
 import AnalyzePanel from '../components/review/AnalyzePanel';
+import { useAuth } from '../hooks/useAuth';
 
 const ReviewDetail = () => {
+  const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState(false);
 
   const { data: review, isLoading, isError, error } = useQuery({
-    queryKey: ['review', id],
+    queryKey: ['review', user?.id, id],
     queryFn: () => reviewService.getReviewById(id),
+    enabled: !!user?.id && !!id,
     staleTime: 1000 * 60 * 5,
   });
 

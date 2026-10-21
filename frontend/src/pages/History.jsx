@@ -18,8 +18,10 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { reviewService, reportService } from '../services';
+import { useAuth } from '../hooks/useAuth';
 
 const History = () => {
+  const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [deletingId, setDeletingId] = useState(null);
@@ -28,8 +30,9 @@ const History = () => {
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
-    queryKey: ['reviewHistory', page],
+    queryKey: ['reviewHistory', user?.id, page],
     queryFn: () => reviewService.getHistory(page, pageSize),
+    enabled: !!user?.id,
     staleTime: 1000 * 60 * 2,
   });
 

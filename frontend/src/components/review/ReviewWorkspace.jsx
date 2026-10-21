@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 
 import { useReview } from "../../context/ReviewContext";
+import { useAuth } from "../../hooks/useAuth";
 
 import UploadZone from "./UploadZone";
 import FilePreview from "./FilePreview";
@@ -11,7 +12,7 @@ import EditorToolbar from "../editor/EditorToolbar";
 import AnalyzePanel from "./AnalyzePanel";
 
 const ReviewWorkspace = () => {
-
+  const { user } = useAuth();
   const { code, setCode } = useReview();
 
   // Core states
@@ -21,6 +22,29 @@ const ReviewWorkspace = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisCompleted, setAnalysisCompleted] = useState(false);
   const [analysisData, setAnalysisData] = useState(null);
+
+  // Reset workspace state whenever user logs out or switches accounts
+  useEffect(() => {
+    const handleResetWorkspace = () => {
+      setFile(null);
+      setIsAnalyzing(false);
+      setAnalysisCompleted(false);
+      setAnalysisData(null);
+    };
+    window.addEventListener('auth-logout', handleResetWorkspace);
+    window.addEventListener('auth-expired', handleResetWorkspace);
+    return () => {
+      window.removeEventListener('auth-logout', handleResetWorkspace);
+      window.removeEventListener('auth-expired', handleResetWorkspace);
+    };
+  }, []);
+
+  useEffect(() => {
+    setFile(null);
+    setIsAnalyzing(false);
+    setAnalysisCompleted(false);
+    setAnalysisData(null);
+  }, [user?.id]);
 
   // Editor configuration states
   const [fontSize, setFontSize] = useState(14);

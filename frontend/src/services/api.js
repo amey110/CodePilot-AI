@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { queryClient } from '../lib/queryClient';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -7,6 +8,8 @@ const api = axios.create({
   timeout: 25000, // 25s timeout allows for Render cold-starts but prevents infinite hangs
   headers: {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store',
+    Pragma: 'no-cache',
   },
 });
 
@@ -16,7 +19,11 @@ api.interceptors.request.use(
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      delete config.headers.Authorization;
     }
+    config.headers['Cache-Control'] = 'no-cache, no-store';
+    config.headers['Pragma'] = 'no-cache';
     return config;
   },
   (error) => {
@@ -31,9 +38,10 @@ api.interceptors.response.use(
     const isLoginEndpoint = error.config?.url?.includes('/auth/login');
 
     if (error.response && error.response.status === 401 && !isLoginEndpoint) {
-      // Clear token and redirect to login if session expires on an authenticated route
+      // Clear token, purge cache, and notify AuthContext
       localStorage.removeItem('token');
-      // Dispatch a custom event to notify AuthContext
+      localStorage.removeItem('user');
+      queryClient.clear();
       window.dispatchEvent(new Event('auth-expired'));
     }
     

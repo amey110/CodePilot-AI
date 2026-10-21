@@ -64,6 +64,15 @@ app.add_middleware(
 # Attach Custom Logging Middleware
 app.add_middleware(LoggingMiddleware)
 
+# Prevent caching of authenticated API responses across all clients/proxies
+@app.middleware("http")
+async def add_no_cache_headers(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+    return response
+
 # Mount API Routers
 app.include_router(auth_router, prefix="/api")
 app.include_router(review_router, prefix="/api")
