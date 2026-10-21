@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services';
 import { queryClient } from '../lib/queryClient';
@@ -10,12 +10,16 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
+  const isLoggingOutRef = useRef(false);
   const navigate = useNavigate();
 
   // Comprehensive Logout handler: cleans up tokens, storage, cookies, caches, and global state
   const logout = useCallback((showToast = true) => {
-    // 1. Notify backend (best-effort fire and forget)
-    authService.logout().catch(() => {});
+    if (isLoggingOutRef.current) return;
+    isLoggingOutRef.current = true;
+
+    // 1. Dismiss any previous session-expired toast
+    toast.dismiss('session-expired');
 
     // 2. Clear token & user from storage
     localStorage.removeItem('token');
@@ -48,11 +52,16 @@ export const AuthProvider = ({ children }) => {
 
     // 7. Toast feedback
     if (showToast) {
-      toast.success('Logged out successfully.');
+      toast.success('Logged out successfully.', { id: 'logout-success' });
     }
 
     // 8. Redirect cleanly to login page
     navigate('/login', { replace: true });
+
+    // 9. Inform backend (fire and forget, silently ignore any response)
+    authService.logout().catch(() => {}).finally(() => {
+      isLoggingOutRef.current = false;
+    });
   }, [navigate]);
 
   // Fetch current user details
@@ -125,8 +134,13 @@ export const AuthProvider = ({ children }) => {
   // Handle global JWT expiration events from Axios interceptor
   useEffect(() => {
     const handleAuthExpired = () => {
+      // If already logged out or in the process of logging out, ignore
+      if (isLoggingOutRef.current || !localStorage.getItem('token')) {
+        return;
+      }
       logout(false);
-      toast.error('Session expired. Please log in again.');
+      // Deduplicate with specific toast ID so it can never stack multiple times
+      toast.error('Session expired. Please log in again.', { id: 'session-expired' });
     };
     
     window.addEventListener('auth-expired', handleAuthExpired);

@@ -33,7 +33,7 @@ def read_current_user(current_user: User = Depends(get_current_user)):
     return current_user
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
-def logout(current_user: User = Depends(get_current_user)):
+def logout():
     """
     Invalidates client session. Since JWT is stateless, the server responds
     with confirmation and the client removes the stored token.

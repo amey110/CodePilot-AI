@@ -61,3 +61,11 @@ def test_login_success():
     assert response.status_code == 200
     assert "access_token" in response.json()
     assert response.json()["token_type"] == "bearer"
+
+def test_logout_endpoint():
+    """
+    Test that the logout endpoint always responds successfully without throwing 401.
+    """
+    response = client.post("/api/auth/logout")
+    assert response.status_code == 200
+    assert "Successfully logged out" in response.json()["message"]

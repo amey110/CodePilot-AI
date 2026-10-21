@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { queryClient } from '../lib/queryClient';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -35,16 +34,19 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    const url = error.config?.url || '';
     const isAuthEndpoint = Boolean(
-      error.config?.url?.includes('auth/login') ||
-      error.config?.url?.includes('auth/register')
+      url.includes('auth/login') ||
+      url.includes('auth/register') ||
+      url.includes('auth/logout')
     );
 
-    if (error.response && error.response.status === 401 && !isAuthEndpoint) {
-      // Clear token, purge cache, and notify AuthContext
+    // Only dispatch auth-expired if a valid token actually existed in storage
+    const hadToken = Boolean(localStorage.getItem('token'));
+
+    if (error.response && error.response.status === 401 && !isAuthEndpoint && hadToken) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      queryClient.clear();
       window.dispatchEvent(new Event('auth-expired'));
     }
     
