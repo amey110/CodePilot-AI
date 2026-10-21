@@ -35,9 +35,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isLoginEndpoint = error.config?.url?.includes('/auth/login');
+    const isAuthEndpoint = Boolean(
+      error.config?.url?.includes('auth/login') ||
+      error.config?.url?.includes('auth/register')
+    );
 
-    if (error.response && error.response.status === 401 && !isLoginEndpoint) {
+    if (error.response && error.response.status === 401 && !isAuthEndpoint) {
       // Clear token, purge cache, and notify AuthContext
       localStorage.removeItem('token');
       localStorage.removeItem('user');

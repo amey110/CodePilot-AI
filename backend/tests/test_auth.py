@@ -27,3 +27,37 @@ def test_register_validation():
     # Missing fields
     response = client.post("/api/auth/register", json={"email": "not-an-email"})
     assert response.status_code == 422
+
+def test_login_wrong_email():
+    """
+    Test that logging in with an unregistered email returns 401 with 'Wrong Email ID'.
+    """
+    response = client.post("/api/auth/login", json={
+        "email": "nonexistent_user_999@example.com",
+        "password": "anyPassword123!"
+    })
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Wrong Email ID"
+
+def test_login_wrong_password():
+    """
+    Test that logging in with valid email but wrong password returns 401 with 'Wrong Password'.
+    """
+    response = client.post("/api/auth/login", json={
+        "email": "testuser@example.com",
+        "password": "WrongPassword123!"
+    })
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Wrong Password"
+
+def test_login_success():
+    """
+    Test that logging in with valid credentials returns 200 with an access token.
+    """
+    response = client.post("/api/auth/login", json={
+        "email": "testuser@example.com",
+        "password": "password123"
+    })
+    assert response.status_code == 200
+    assert "access_token" in response.json()
+    assert response.json()["token_type"] == "bearer"

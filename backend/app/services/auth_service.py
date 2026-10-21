@@ -3,7 +3,12 @@ from app.database.repository import user_repository
 from app.schemas.user import UserCreate, UserLogin
 from app.models.user import User
 from app.core.security import get_password_hash, verify_password
-from app.exceptions.custom_exceptions import UserAlreadyExistsException, InvalidCredentialsException
+from app.exceptions.custom_exceptions import (
+    UserAlreadyExistsException, 
+    InvalidCredentialsException,
+    WrongEmailException,
+    WrongPasswordException
+)
 
 class AuthService:
     def register_user(self, db: Session, user_in: UserCreate) -> User:
@@ -28,11 +33,11 @@ class AuthService:
         # Fetch user
         user = user_repository.get_by_email(db, email=user_login.email)
         if not user:
-            raise InvalidCredentialsException()
+            raise WrongEmailException()
         
         # Verify password
         if not verify_password(user_login.password, user.hashed_password):
-            raise InvalidCredentialsException()
+            raise WrongPasswordException()
             
         return user
 

@@ -12,10 +12,24 @@ class UserAlreadyExistsException(CustomException):
         )
 
 class InvalidCredentialsException(CustomException):
+    def __init__(self, detail: str = "Could not validate credentials or invalid login."):
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=detail
+        )
+
+class WrongEmailException(CustomException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials or invalid login."
+            detail="Wrong Email ID"
+        )
+
+class WrongPasswordException(CustomException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Wrong Password"
         )
 
 class InactiveUserException(CustomException):
