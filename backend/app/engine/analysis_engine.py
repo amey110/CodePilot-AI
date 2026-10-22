@@ -1,4 +1,5 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Any, List
 
 from app.analyzers.pylint_analyzer import pylint_analyzer
@@ -12,18 +13,12 @@ logger = logging.getLogger("analysis_engine")
 
 class AnalysisEngine:
 
-    def analyze(self, code: str) -> Dict[str, Any]:
-        """
-        Executes all static code analyzers independently, isolating failures so
-        one analyzer error does not break the entire pipeline, and calculates
-        an overall weighted quality score and rating.
-        """
-        # 1. Pylint Analysis
+    def _run_pylint(self, code: str) -> Dict[str, Any]:
         try:
-            pylint_result = pylint_analyzer.analyze(code)
+            return pylint_analyzer.analyze(code)
         except Exception as e:
             logger.error(f"Pylint analyzer failed: {e}", exc_info=True)
-            pylint_result = {
+            return {
                 "success": False,
                 "score": 0.0,
                 "rating": "Poor",
@@ -35,12 +30,12 @@ class AnalysisEngine:
                 }]
             }
 
-        # 2. Bandit Security Analysis
+    def _run_bandit(self, code: str) -> Dict[str, Any]:
         try:
-            bandit_result = bandit_analyzer.analyze(code)
+            return bandit_analyzer.analyze(code)
         except Exception as e:
             logger.error(f"Bandit analyzer failed: {e}", exc_info=True)
-            bandit_result = {
+            return {
                 "success": False,
                 "score": 0.0,
                 "rating": "Poor",
@@ -53,12 +48,12 @@ class AnalysisEngine:
                 }]
             }
 
-        # 3. Flake8 Style Analysis
+    def _run_flake8(self, code: str) -> Dict[str, Any]:
         try:
-            flake8_result = flake8_analyzer.analyze(code)
+            return flake8_analyzer.analyze(code)
         except Exception as e:
             logger.error(f"Flake8 analyzer failed: {e}", exc_info=True)
-            flake8_result = {
+            return {
                 "success": False,
                 "score": 0.0,
                 "rating": "Poor",
@@ -70,12 +65,12 @@ class AnalysisEngine:
                 }]
             }
 
-        # 4. Radon Complexity & Maintainability Analysis
+    def _run_radon(self, code: str) -> Dict[str, Any]:
         try:
-            radon_result = radon_analyzer.analyze(code)
+            return radon_analyzer.analyze(code)
         except Exception as e:
             logger.error(f"Radon analyzer failed: {e}", exc_info=True)
-            radon_result = {
+            return {
                 "success": False,
                 "score": 0.0,
                 "rating": "Poor",
@@ -91,12 +86,12 @@ class AnalysisEngine:
                 }]
             }
 
-        # 5. AST Parsing & Structure Analysis
+    def _run_parser(self, code: str) -> Dict[str, Any]:
         try:
-            parser_result = code_parser.parse(code)
+            return code_parser.parse(code)
         except Exception as e:
             logger.error(f"AST parser failed: {e}", exc_info=True)
-            parser_result = {
+            return {
                 "success": False,
                 "line_counts": {"total": len(code.splitlines()) if code else 0, "code": 0, "comment": 0, "blank": 0},
                 "functions": [],
@@ -109,6 +104,26 @@ class AnalysisEngine:
                     "message": f"AST parser error: {str(e)}"
                 }]
             }
+
+    def analyze(self, code: str) -> Dict[str, Any]:
+        """
+        Executes all static code analyzers concurrently in parallel worker threads,
+        drastically reducing analysis latency while isolating failures so one analyzer
+        error does not break the entire pipeline.
+        """
+        # Run all 5 static analyzers concurrently
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            fut_pylint = executor.submit(self._run_pylint, code)
+            fut_bandit = executor.submit(self._run_bandit, code)
+            fut_flake8 = executor.submit(self._run_flake8, code)
+            fut_radon = executor.submit(self._run_radon, code)
+            fut_parser = executor.submit(self._run_parser, code)
+
+            pylint_result = fut_pylint.result()
+            bandit_result = fut_bandit.result()
+            flake8_result = fut_flake8.result()
+            radon_result = fut_radon.result()
+            parser_result = fut_parser.result()
 
         # Aggregate all issues across analyzers
         all_issues: List[Dict[str, Any]] = []

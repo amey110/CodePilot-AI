@@ -10,9 +10,9 @@ logger = logging.getLogger("gemini_service")
 
 class GeminiService:
     MAX_CODE_CHARS = 25000  # Cap code length to prevent token overflow
-    TIMEOUT_SECONDS = 30
+    TIMEOUT_SECONDS = 20
     DEFAULT_MODELS = [
-        "gemini-3.8-flash",
+        "gemini-2.5-flash",
         "gemini-flash-latest",
     ]
 

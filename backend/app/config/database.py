@@ -16,8 +16,8 @@ class Settings(BaseSettings):
 
     # Google Gemini AI Settings
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-flash-latest"
-    GEMINI_FALLBACK_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_FALLBACK_MODEL: str = "gemini-flash-latest"
 
     # CORS — comma-separated list of allowed frontend origins
     CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:3000,http://127.0.0.1:3000,https://code-pilot-ai-beta.vercel.app"

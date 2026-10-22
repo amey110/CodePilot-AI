@@ -9,6 +9,7 @@ export const reviewService = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 90000, // 90s timeout for heavy AI review + cold starts
       onUploadProgress: (progressEvent) => {
         if (onUploadProgress && progressEvent.total) {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -21,7 +22,7 @@ export const reviewService = {
 
   // Analyze python code from editor (json body)
   analyzeCode: async (code) => {
-    const response = await api.post('/review/analyze', { code });
+    const response = await api.post('/review/analyze', { code }, { timeout: 90000 });
     return response.data;
   },
 
