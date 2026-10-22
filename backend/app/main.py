@@ -49,22 +49,24 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ---------------------------------------------------------------------------
-# CORS — origins come from CORS_ORIGINS env variable (comma-separated)
+# Middleware & CORS Configuration
 # ---------------------------------------------------------------------------
 origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# 1. Global exception interceptor: Catches unhandled errors and returns JSON 500
+# so that the outer CORSMiddleware can reliably append CORS headers.
+@app.middleware("http")
+async def catch_exceptions_middleware(request: Request, call_next):
+    try:
+        return await call_next(request)
+    except Exception as exc:
+        logger.error(f"Unhandled server error on {request.method} {request.url.path}: {exc}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error occurred.", "error": str(exc)},
+        )
 
-# Attach Custom Logging Middleware
-app.add_middleware(LoggingMiddleware)
-
-# Prevent caching of authenticated API responses across all clients/proxies
+# 2. Prevent caching of authenticated API responses across all clients/proxies
 @app.middleware("http")
 async def add_no_cache_headers(request: Request, call_next):
     response = await call_next(request)
@@ -72,6 +74,21 @@ async def add_no_cache_headers(request: Request, call_next):
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
     return response
+
+# 3. Attach Custom Logging Middleware
+app.add_middleware(LoggingMiddleware)
+
+# 4. Attach CORSMiddleware LAST so that it wraps everything (outermost user middleware).
+# This guarantees that ALL responses (200, 4xx, and 500s) receive CORS headers,
+# and supports any Vercel preview or production deployments via regex.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Mount API Routers
 app.include_router(auth_router, prefix="/api")

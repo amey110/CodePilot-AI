@@ -23,6 +23,12 @@ api.interceptors.request.use(
     }
     config.headers['Cache-Control'] = 'no-cache, no-store';
     config.headers['Pragma'] = 'no-cache';
+
+    // Remove Content-Type when sending FormData so browser automatically
+    // constructs 'multipart/form-data; boundary=----WebKitFormBoundary...'
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
     return config;
   },
   (error) => {

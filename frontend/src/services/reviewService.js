@@ -6,9 +6,6 @@ export const reviewService = {
     const formData = new FormData();
     formData.append('file', file);
     const response = await api.post('/review/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
       timeout: 90000, // 90s timeout for heavy AI review + cold starts
       onUploadProgress: (progressEvent) => {
         if (onUploadProgress && progressEvent.total) {
